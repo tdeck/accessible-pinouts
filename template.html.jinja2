@@ -1,0 +1,46 @@
+---
+date: {{ now }}
+title: Accessible pinout for {{ part.name }}
+params:
+  part_name: "{{ part.name }}"
+  part_desc: "{{ part.desc }}"
+---
+
+<section>
+  {% if part.desc %}
+    <p>
+      <strong>Part description:</strong> {{ part.desc }}
+    </p>
+  {% endif %}
+
+  <p>
+    <strong>Package description:</strong>
+    {{ part.pkg_desc|nl2br }}
+  </p>
+</section>
+
+<section>
+  <h2>Pin assignments</h2>
+
+  {% for pg in part.pin_groups %}
+    {% if pg.name %}<h3>{{ pg.name }}</h3>{% endif %}
+
+    <table>
+      <thead>
+        <tr>
+          <th>Pin</th>
+          <th>Signals</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in pg.pins %}
+          <tr><td>{{ p.number }}</td><td>{{ p.name }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endfor %}
+</section>
+
+<section>
+  This pinout was automatically generated from the <a href="https://gitlab.com/kicad/libraries/kicad-symbols">KiCAD symbol library</a>. It is possible that there may be a mistake in the KiCAD symbol library that could lead to wrong information on this page.
+</section>

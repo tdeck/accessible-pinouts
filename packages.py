@@ -13,10 +13,17 @@ class PinGroup:
     name: Optional[str]
     pins: List[Pin]
 
+@dataclass
+class Part:
+    part_id: str
+    name: str
+    desc: Optional[str]
+    pkg_desc: str
+    pin_groups: List[PinGroup]
 
 class Package:
     def __init__(self, desc, group_names: List[str]=[]):
-        self._desc = desc
+        self._desc = dedent(desc).strip()
         self._group_names = group_names
             
 
@@ -44,20 +51,18 @@ class Package:
 
 DIPPackage = Package(
     desc="""
-    This package has two parallel rows of pins extending down from edges of the chip.
+    This package has two parallel rows of pins extending down from opposite edges of the chip.
 
     There should be a semicircular notch that you can feel in the middle of one of the package's shorter bare edges. With the pins facing downward and the chip oriented so notch is on the side of the chip furthest from you, Pin 1 will be in the far left corner of the chip.
 
-    Pins are numbered clockwise. Numbers increase from the far left corner to the near left corner. They then continue on the right side, increasing from the near right corner to the far right corner. Thus the highest number pin is to the right of pin 1.
+    Pins are numbered counter-clockwise. Numbers increase from the far left corner to the near left corner. They then continue on the right side, increasing from the near right corner to the far right corner. Thus the highest number pin is to the right of pin 1.
     """,
-    group_names=["Left", "Right"],
+    group_names=["Left side (numbering starts at far end)", "Right side (numbering starts at near end)"],
 )
 
 
 # The keys here are the KiCAD footprint name
-PACKAGE_REGISTRY: Dict[str, Package] = {
-    'Package_DIP': DIPPackage,
-}
+PACKAGE_REGISTRY: Dict[str, Package] = {}
 
 THT_DIP_KEYS = [
  'Package_DIP:DIP-12_W7.62mm',

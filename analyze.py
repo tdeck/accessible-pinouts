@@ -27,12 +27,26 @@ def get_footprints(accumulator: Optional[Set[str]], symbol: Symbol) -> Optional[
     if accumulator is None:
         accumulator = set()
 
-    
     accumulator.add(prop_value(symbol, "Footprint"))
 
     return accumulator
 
-target_fn = get_footprints
+
+def get_parts_with_named_pins(accumulator: Optional[Set[str]], symbol: Symbol) -> Optional[Set[str]]:
+    if accumulator is None:
+        accumulator = set()
+
+    pin_unit = any((True for u in symbol.units if u.pins))
+
+    if pin_unit:
+        footprint = prop_value(symbol, "Footprint")
+
+        accumulator.add(symbol.entryName + '::' + str(footprint))
+
+    return accumulator
+
+
+target_fn = get_parts_with_named_pins
 acc = None
 
 i = 1
