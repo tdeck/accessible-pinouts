@@ -22,9 +22,10 @@ class Part:
     pin_groups: List[PinGroup]
 
 class Package:
-    def __init__(self, desc, group_names: List[str]=[]):
+    def __init__(self, desc, group_names: List[str]=[], max_pins: Optional[int]=None):
         self._desc = dedent(desc).strip()
         self._group_names = group_names
+        self._max_pins = max_pins
             
 
     def desc(self) -> str:
@@ -32,8 +33,15 @@ class Package:
 
     def group_pins(self, pins: List[Pin]):
         """ Default behavior is to divide pins evenly into groups in given order. This is suitable for rectangular packages. """
+        # Ensure no duplicate pin numbers
+        assert len(set((p.number for p in pins))) == len(pins) 
+
+
+        if self._max_pins:
+            assert len(pins) <= self._max_pins
+
         if not self._group_names:
-            return PinGroup(name=None, pins=pins)
+            return [PinGroup(name=None, pins=pins)]
 
         assert len(pins) % len(self._group_names) == 0
 
@@ -60,9 +68,22 @@ DIPPackage = Package(
     group_names=["Left side (numbering starts at far end)", "Right side (numbering starts at near end)"],
 )
 
+TO220Package = Package(
+    desc="""
+    This package has 3 pins on one edge, and a metal tab with a hole in the center on the opposite edge. The metal tab serves as a heat sink and can be soldered to a larger heat sink or attached with an M3 screw.
+
+    With the pins pointing towards you and the part flat on the table, tab side down, the pins are numbered 1, 2, 3 from left to right.
+
+    The metal tab may be designated as pin 4. It is typically electrically connected to the center pin.
+    """,
+    max_pins=4,
+)
+
 
 # The keys here are the KiCAD footprint name
-PACKAGE_REGISTRY: Dict[str, Package] = {}
+PACKAGE_REGISTRY: Dict[str, Package] = {
+        'Package_TO_SOT_THT:TO-220-3_Vertical': TO220Package,
+}
 
 THT_DIP_KEYS = [
  'Package_DIP:DIP-12_W7.62mm',

@@ -3,6 +3,7 @@
 from typing import Optional, Set
 import os
 from pprint import pprint
+from collections import Counter
 
 from kiutils.symbol import Symbol, SymbolLib
 from tqdm import tqdm  # Cool progress bar thing, optional
@@ -22,12 +23,12 @@ def prop_value(symbol: Symbol, key: str):
 
     return matches[0].value
 
-def get_footprints(accumulator: Optional[Set[str]], symbol: Symbol) -> Optional[Set[str]]:
+def get_footprints(accumulator: Optional[Counter], symbol: Symbol) -> Optional[Set[str]]:
     # Actually this is all listed here: https://kicad.github.io/footprints/Package_DIP
     if accumulator is None:
-        accumulator = set()
+        accumulator = Counter()
 
-    accumulator.add(prop_value(symbol, "Footprint"))
+    accumulator[prop_value(symbol, "Footprint")] += 1
 
     return accumulator
 
@@ -46,7 +47,20 @@ def get_parts_with_named_pins(accumulator: Optional[Set[str]], symbol: Symbol) -
     return accumulator
 
 
-target_fn = get_parts_with_named_pins
+def get_parts_with_multiple_pin_units(accumulator: Optional[Set[str]], symbol: Symbol) -> Optional[Set[str]]:
+    if accumulator is None:
+        accumulator = set()
+
+    pin_units = [u for u in symbol.units if u.pins]
+
+    if len(pin_units) > 1:
+        accumulator.add(symbol.entryName + f" has {len(pin_units)} pin units")
+
+    return accumulator
+
+
+
+target_fn = get_parts_with_multiple_pin_units
 acc = None
 
 i = 1

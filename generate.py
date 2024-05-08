@@ -41,10 +41,6 @@ def prop_value(symbol: Symbol, key: str):
 
 
 def process_symbol(symbol: Symbol) -> None:
-    pin_units = [u for u in symbol.units if u.pins]
-    if len(pin_units) != 1:
-        return  # Need exactly one unit with pins; some have >1 IDK why yet
-
     footprint = prop_value(symbol, 'Footprint')
     if footprint is None or footprint not in PACKAGE_REGISTRY:
         return
@@ -55,8 +51,12 @@ def process_symbol(symbol: Symbol) -> None:
             name=p.name,
             number=int(p.number),
         )
-        for p in pin_units[0].pins
+        for u in symbol.units
+        for p in u.pins
     ]
+
+    if not pins:
+        return
 
     pins.sort(key=lambda p: p.number)
     
