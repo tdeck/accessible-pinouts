@@ -40,19 +40,30 @@ def prop_value(symbol: Symbol, key: str):
     return matches[0].value
 
 
+def has_meaningful_pin_labels(pins: List[Pin]):
+    for pin in pins:
+        name = pin.name
+        if name != "~" and name != "" and name != "NC":
+            return True
+    return False
+
+
 def process_symbol(symbol: Symbol) -> None:
     footprint = prop_value(symbol, 'Footprint')
     if footprint is None or footprint not in PACKAGE_REGISTRY:
         return
 
+    kc_pins = [p for u in symbol.units for p in u.pins]
+
+    if not has_meaningful_pin_labels(kc_pins):
+        return
 
     pins = [
         Pin(
             name=p.name,
             number=int(p.number),
         )
-        for u in symbol.units
-        for p in u.pins
+        for p in kc_pins
     ]
 
     if not pins:
