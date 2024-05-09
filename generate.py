@@ -48,6 +48,22 @@ def has_meaningful_pin_labels(pins: List[Pin]):
     return False
 
 
+def reformat_label(txt: str) -> str:
+    """ Replaces some of the formatting used in KiCAD symbols with more human readable formatting. """
+
+    # Inverted (overbar) pins
+    txt = re.sub(r'~\{(.+?)\}', r'\1 (active low)', txt)
+
+    # Subscript + superscript (not much we can do here so we just clean up the braces)
+    txt = re.sub(r'_\{(.+?)\}', r'_\1', txt)
+    txt = re.sub(r'\^\{(.+?)\}', r'_\1', txt)
+
+    # Slashes
+    txt = re.sub(r'(\S)/(\S)', r'\1 / \2', txt)
+
+    return txt
+
+
 def process_symbol(symbol: Symbol) -> None:
     footprint = prop_value(symbol, 'Footprint')
     if footprint is None or footprint not in PACKAGE_REGISTRY:
@@ -60,7 +76,7 @@ def process_symbol(symbol: Symbol) -> None:
 
     pins = [
         Pin(
-            name=p.name,
+            name=reformat_label(p.name),
             number=int(p.number),
         )
         for p in kc_pins
@@ -90,24 +106,23 @@ def process_symbol(symbol: Symbol) -> None:
         print(f"Part {symbol.entryName} is weird!")
 
 
-# Prepare the list of files to process
+if __name__ == '__main__':
+    # Prepare the list of files to process
+    files = []
+    if len(sys.argv) > 1:
+        files.append(f"{KICAD_REPO}/{sys.argv[1]}{SYM_EXTENSION}")
+    else:
+        for filename in os.listdir(KICAD_REPO):
+            if not filename.endswith(SYM_EXTENSION):
+                continue
 
-files = []
-if len(sys.argv) > 1:
-    files.append(f"{KICAD_REPO}/{sys.argv[1]}{SYM_EXTENSION}")
-else:
-    for filename in os.listdir(KICAD_REPO):
-        if not filename.endswith(SYM_EXTENSION):
-            continue
+            files.append(os.path.join(KICAD_REPO, filename))
 
-        files.append(os.path.join(KICAD_REPO, filename))
-
-# Generate pinouts for all eligible parts in the catalog
+    # Generate pinouts for all eligible parts in the catalog
 
 
-for file in files:
-    sym_lib = SymbolLib.from_file(file)
+    for file in files:
+        sym_lib = SymbolLib.from_file(file)
 
-    for sym in sym_lib.symbols:
-        process_symbol(sym)
-
+        for sym in sym_lib.symbols:
+            process_symbol(sym)
