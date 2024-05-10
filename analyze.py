@@ -8,8 +8,8 @@ from collections import Counter
 from kiutils.symbol import Symbol, SymbolLib
 from tqdm import tqdm  # Cool progress bar thing, optional
 
-KICAD_REPO = "/home/troy/Downloads/pinout/kicad-symbols"
-EXTENSION = '.kicad_sym'
+KICAD_REPO = "/home/troy/Downloads/pinout/digikey-kicad-library/digikey-symbols"
+SYM_EXTENSION = '.kicad_sym'
 END_EARLY = False
 
 def prop_value(symbol: Symbol, key: str):
@@ -60,12 +60,12 @@ def get_parts_with_multiple_pin_units(accumulator: Optional[Set[str]], symbol: S
 
 
 
-target_fn = get_parts_with_multiple_pin_units
+target_fn = get_footprints
 acc = None
 
 i = 1
 for filename in tqdm(os.listdir(KICAD_REPO)):
-    if not filename.endswith(EXTENSION):
+    if not filename.endswith(SYM_EXTENSION):
         continue
 
     if END_EARLY and i > 5:

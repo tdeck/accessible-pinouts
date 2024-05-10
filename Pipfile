@@ -10,6 +10,7 @@ pytest = "*"
 [packages]
 kiutils = "*"
 jinja2 = "*"
+gitpython = "*"
 
 [requires]
 python_version = "3.10"

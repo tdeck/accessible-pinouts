@@ -21,6 +21,11 @@ class Part:
     pkg_desc: str
     pin_groups: List[PinGroup]
 
+    # Source repo information
+    source_name: str
+    source_url: str
+    source_revision: str
+
 class Package:
     def __init__(self, desc, group_names: List[str]=[], max_pins: Optional[int]=None):
         self._desc = dedent(desc).strip()
@@ -82,33 +87,44 @@ TO220Package = Package(
 
 # The keys here are the KiCAD footprint name
 PACKAGE_REGISTRY: Dict[str, Package] = {
-        'Package_TO_SOT_THT:TO-220-3_Vertical': TO220Package,
+    'Package_TO_SOT_THT:TO-220-3_Vertical': TO220Package,
+    'digikey-footprints:TO-220-3': TO220Package,
 }
 
 THT_DIP_KEYS = [
- 'Package_DIP:DIP-12_W7.62mm',
- 'Package_DIP:DIP-14_W7.62mm',
- 'Package_DIP:DIP-16_W10.16mm',
- 'Package_DIP:DIP-16_W7.62mm',
- 'Package_DIP:DIP-18_W7.62mm',
- 'Package_DIP:DIP-20_W7.62mm',
- 'Package_DIP:DIP-20_W7.62mm_LongPads',
- 'Package_DIP:DIP-22_W7.62mm',
- 'Package_DIP:DIP-24_W15.24mm',
- 'Package_DIP:DIP-24_W7.62mm',
- 'Package_DIP:DIP-28_W15.24mm',
- 'Package_DIP:DIP-28_W7.62mm',
- 'Package_DIP:DIP-32_W15.24mm',
- 'Package_DIP:DIP-40_W15.24mm',
- 'Package_DIP:DIP-4_W10.16mm',
- 'Package_DIP:DIP-4_W7.62mm',
- 'Package_DIP:DIP-5-6_W7.62mm',
- 'Package_DIP:DIP-6_W7.62mm',
- 'Package_DIP:DIP-8-N6_W7.62mm',
- 'Package_DIP:DIP-8-N7_W7.62mm',
- 'Package_DIP:DIP-8_W10.16mm',
- 'Package_DIP:DIP-8_W7.62mm',
- 'Package_DIP:DIP-8_W7.62mm_LongPads',
+    'Package_DIP:DIP-12_W7.62mm',
+    'Package_DIP:DIP-14_W7.62mm',
+    'Package_DIP:DIP-16_W10.16mm',
+    'Package_DIP:DIP-16_W7.62mm',
+    'Package_DIP:DIP-18_W7.62mm',
+    'Package_DIP:DIP-20_W7.62mm',
+    'Package_DIP:DIP-20_W7.62mm_LongPads',
+    'Package_DIP:DIP-22_W7.62mm',
+    'Package_DIP:DIP-24_W15.24mm',
+    'Package_DIP:DIP-24_W7.62mm',
+    'Package_DIP:DIP-28_W15.24mm',
+    'Package_DIP:DIP-28_W7.62mm',
+    'Package_DIP:DIP-32_W15.24mm',
+    'Package_DIP:DIP-40_W15.24mm',
+    'Package_DIP:DIP-4_W10.16mm',
+    'Package_DIP:DIP-4_W7.62mm',
+    'Package_DIP:DIP-5-6_W7.62mm',
+    'Package_DIP:DIP-6_W7.62mm',
+    'Package_DIP:DIP-8-N6_W7.62mm',
+    'Package_DIP:DIP-8-N7_W7.62mm',
+    'Package_DIP:DIP-8_W10.16mm',
+    'Package_DIP:DIP-8_W7.62mm',
+    'Package_DIP:DIP-8_W7.62mm_LongPads',
+    'digikey-footprints:DIP-8_W7.62mm',
+    'digikey-footprints:DIP-14_W3mm',
+    'digikey-footprints:DIP-16_W7.62mm',
+    'digikey-footprints:DIP-6_W7.62mm',
+    'digikey-footprints:DIP-28_W7.62mm',
+    'digikey-footprints:DIP-20_W7.62mm',
+    'digikey-footprints:DIP-18_W7.62mm',
+    'digikey-footprints:DIP-4_W7.62mm',
+    'digikey-footprints:DIP-40_W15.24mm',
+    'digikey-footprints:DIP-10_W10.16mm',
 ]
 
 for key in THT_DIP_KEYS:

@@ -9,14 +9,21 @@ import jinja2
 from markupsafe import Markup, escape
 from kiutils.symbol import Symbol, SymbolLib
 from tqdm import tqdm  # Cool progress bar thing, optional
+import git
 
+from repos import *
 from packages import *
 
-KICAD_REPO = "/home/troy/Downloads/pinout/kicad-symbols"
-SYM_EXTENSION = '.kicad_sym'
 OUTDIR = '/home/troy/projects/static/blindmakers/content/pinouts'
+#OUTDIR = '/home/troy/tmp/pinout-gen'
 
 jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader("."))
+
+DEBUG=False
+
+def debug(*args):
+    if DEBUG:
+        print(*args)
 
 
 @jinja2.pass_eval_context
@@ -64,14 +71,16 @@ def reformat_label(txt: str) -> str:
     return txt
 
 
-def process_symbol(symbol: Symbol) -> None:
+def process_symbol(symbol: Symbol, repo: Repo, repo_rev: str) -> None:
     footprint = prop_value(symbol, 'Footprint')
     if footprint is None or footprint not in PACKAGE_REGISTRY:
+        debug("footprint reject", symbol.entryName, footprint)
         return
 
     kc_pins = [p for u in symbol.units for p in u.pins]
 
     if not has_meaningful_pin_labels(kc_pins):
+        debug("Label reject", symbol.entryName)
         return
 
     pins = [
@@ -83,7 +92,9 @@ def process_symbol(symbol: Symbol) -> None:
     ]
 
     if not pins:
+        debug("Pins reject", symbol.entryName)
         return
+
 
     pins.sort(key=lambda p: p.number)
     
@@ -98,6 +109,9 @@ def process_symbol(symbol: Symbol) -> None:
             desc=prop_value(symbol, 'Description'),
             pkg_desc=pkg.desc(),
             pin_groups=pkg.group_pins(pins),
+            source_name=repo.name,
+            source_url=repo.url,
+            source_revision=repo_rev,
         )
 
         with open(f"{OUTDIR}/{part_id}.html", 'w') as fh:
@@ -108,21 +122,19 @@ def process_symbol(symbol: Symbol) -> None:
 
 if __name__ == '__main__':
     # Prepare the list of files to process
-    files = []
-    if len(sys.argv) > 1:
-        files.append(f"{KICAD_REPO}/{sys.argv[1]}{SYM_EXTENSION}")
-    else:
-        for filename in os.listdir(KICAD_REPO):
+    repos_and_files = []
+    for repo in SYMBOL_REPOS:
+        # Determine git hash
+        git_repo = git.Repo(repo.path, search_parent_directories=True)
+        revision = git_repo.head.object.hexsha[:6]
+
+        for filename in os.listdir(repo.path):
             if not filename.endswith(SYM_EXTENSION):
                 continue
 
-            files.append(os.path.join(KICAD_REPO, filename))
+            file = os.path.join(repo.path, filename)
+            sym_lib = SymbolLib.from_file(file)
 
-    # Generate pinouts for all eligible parts in the catalog
-
-
-    for file in files:
-        sym_lib = SymbolLib.from_file(file)
-
-        for sym in sym_lib.symbols:
-            process_symbol(sym)
+            # Generate pinouts for all eligible parts in the catalog
+            for sym in sym_lib.symbols:
+                process_symbol(sym, repo, revision)
