@@ -19,7 +19,7 @@ OUTDIR = '/home/troy/projects/static/blindmakers/content/pinouts'
 
 jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader("."))
 
-DEBUG=True
+DEBUG=False
 
 def debug(*args):
     if DEBUG:

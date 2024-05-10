@@ -87,11 +87,22 @@ TO220Package = Package(
     max_pins=4,
 )
 
+TO92Package = Package(
+    slug="TO-92",
+    desc="""
+    This False package has three pins protruding from one end. The body of the part has a curved side and a flat side, forming a D-shaped cross section. With the flat side facing up and the three pins pointing toward you, the pins are numbered 1, 2, 3 from left to right.
+    """,
+    max_pins=3,
+)
+
 
 # The keys here are the KiCAD footprint name
 PACKAGE_REGISTRY: Dict[str, Package] = {
     'Package_TO_SOT_THT:TO-220-3_Vertical': TO220Package,
     'digikey-footprints:TO-220-3': TO220Package,
+    "Package_TO_SOT_THT:TO-92_Inline": TO92Package,
+    'digikey-footprints:TO-92-3': TO92Package,
+    'digikey-footprints:TO-92-3_Formed_Leads': TO92Package,
 }
 
 THT_DIP_KEYS = [
