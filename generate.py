@@ -19,7 +19,7 @@ OUTDIR = '/home/troy/projects/static/blindmakers/content/pinouts'
 
 jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader("."))
 
-DEBUG=False
+DEBUG=True
 
 def debug(*args):
     if DEBUG:
@@ -71,13 +71,18 @@ def reformat_label(txt: str) -> str:
     return txt
 
 
-def process_symbol(symbol: Symbol, repo: Repo, repo_rev: str) -> None:
-    footprint = prop_value(symbol, 'Footprint')
-    if footprint is None or footprint not in PACKAGE_REGISTRY:
+def process_part_instance(symbol: Symbol, repo: Repo, footprint: str, parent: Optional[Symbol], repo_rev: str) -> None:
+    if footprint not in PACKAGE_REGISTRY:
         debug("footprint reject", symbol.entryName, footprint)
         return
+    
+    
+    pin_part = parent or symbol
+    kc_pins = [p for u in pin_part.units for p in u.pins]
 
-    kc_pins = [p for u in symbol.units for p in u.pins]
+    if not kc_pins:
+        debug("Pins reject", symbol.entryName)
+        return
 
     if not has_meaningful_pin_labels(kc_pins):
         debug("Label reject", symbol.entryName)
@@ -91,16 +96,11 @@ def process_symbol(symbol: Symbol, repo: Repo, repo_rev: str) -> None:
         for p in kc_pins
     ]
 
-    if not pins:
-        debug("Pins reject", symbol.entryName)
-        return
-
-
     pins.sort(key=lambda p: p.number)
     
     pkg = PACKAGE_REGISTRY[footprint]
 
-    part_id = symbol.entryName
+    part_id = symbol.entryName + '_' + pkg.slug
 
     try:
         part = Part(
@@ -117,7 +117,34 @@ def process_symbol(symbol: Symbol, repo: Repo, repo_rev: str) -> None:
         with open(f"{OUTDIR}/{part_id}.html", 'w') as fh:
             fh.write(template.render(part=part))
     except AssertionError as e:
-        print(f"Part {symbol.entryName} is weird!")
+        print(f"Part {symbol.entryName} is weird!", str(e))
+
+def process_symbol(symbol: Symbol, repo: Repo, lib: SymbolLib, repo_rev: str) -> None:
+    single_footprint = prop_value(symbol, 'Footprint')
+
+    if single_footprint is None or single_footprint == '':
+        fp_filters = prop_value(symbol, 'ki_fp_filters')
+        if not fp_filters:
+            debug("No footprint", symbol.entryName)
+            return # Nothing to do 
+
+        footprints = [f.strip() for f in fp_filters.split()]
+    else:
+        footprints = [single_footprint]
+
+    parent = None
+    if sym.extends:
+        parent = next((s for s in lib.symbols if s.entryName == sym.extends))
+
+
+    for footprint in footprints:
+        process_part_instance(
+            symbol=symbol,
+            repo=repo,
+            footprint=footprint,
+            parent=parent,
+            repo_rev=repo_rev
+        )
 
 
 if __name__ == '__main__':
@@ -137,4 +164,4 @@ if __name__ == '__main__':
 
             # Generate pinouts for all eligible parts in the catalog
             for sym in sym_lib.symbols:
-                process_symbol(sym, repo, revision)
+                process_symbol(sym, repo, sym_lib, revision)

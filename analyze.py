@@ -1,6 +1,6 @@
 # This script helps me analyze the whole library to look for patterns in data representation
 
-from typing import Optional, Set
+from typing import Optional, Set, List, Dict
 import os
 from pprint import pprint
 from collections import Counter
@@ -8,7 +8,7 @@ from collections import Counter
 from kiutils.symbol import Symbol, SymbolLib
 from tqdm import tqdm  # Cool progress bar thing, optional
 
-KICAD_REPO = "/home/troy/Downloads/pinout/digikey-kicad-library/digikey-symbols"
+KICAD_REPO = '/home/troy/Downloads/pinout/kicad-symbols'
 SYM_EXTENSION = '.kicad_sym'
 END_EARLY = False
 
@@ -23,7 +23,12 @@ def prop_value(symbol: Symbol, key: str):
 
     return matches[0].value
 
-def get_footprints(accumulator: Optional[Counter], symbol: Symbol) -> Optional[Set[str]]:
+def prop_dict(symbol: Symbol)-> Dict[str, str]:
+    return {
+        p.key: p.value for p in symbol.properties
+    }
+
+def get_footprints(accumulator: Optional[Counter], symbol: Symbol, **kwargs) -> Optional[Set[str]]:
     # Actually this is all listed here: https://kicad.github.io/footprints/Package_DIP
     if accumulator is None:
         accumulator = Counter()
@@ -33,7 +38,7 @@ def get_footprints(accumulator: Optional[Counter], symbol: Symbol) -> Optional[S
     return accumulator
 
 
-def get_parts_with_named_pins(accumulator: Optional[Set[str]], symbol: Symbol) -> Optional[Set[str]]:
+def get_parts_with_named_pins(accumulator: Optional[Set[str]], symbol: Symbol, **kwargs) -> Optional[Set[str]]:
     if accumulator is None:
         accumulator = set()
 
@@ -47,7 +52,7 @@ def get_parts_with_named_pins(accumulator: Optional[Set[str]], symbol: Symbol) -
     return accumulator
 
 
-def get_parts_with_multiple_pin_units(accumulator: Optional[Set[str]], symbol: Symbol) -> Optional[Set[str]]:
+def get_parts_with_multiple_pin_units(accumulator: Optional[Set[str]], symbol: Symbol, **kwargs) -> Optional[Set[str]]:
     if accumulator is None:
         accumulator = set()
 
@@ -59,8 +64,34 @@ def get_parts_with_multiple_pin_units(accumulator: Optional[Set[str]], symbol: S
     return accumulator
 
 
+def derived_symbol_analysis(accumulator: Optional[List[Dict]], symbol: Symbol, lib: SymbolLib, **kwargs) -> Optional[List[Dict]]:
+    if accumulator is None:
+        accumulator = []
 
-target_fn = get_footprints
+    if symbol.extends:
+        accumulator.append(dict(
+            part=symbol.entryName,
+            extends=symbol.extends,
+            props=prop_dict(symbol),
+        ))
+
+
+    return accumulator
+
+
+def footprint_vs_fp_filters(accumulator: Optional[List[Dict]], symbol: Symbol, **kwargs) -> Optional[List[Dict]]:
+    if accumulator is None:
+        accumulator = []
+
+    accumulator.append(dict(
+        Footprint=prop_value(sym, 'Footprint'),
+        ki_fp_filters=prop_value(sym, 'ki_fp_filters'),
+    ))
+
+
+    return accumulator
+
+target_fn = footprint_vs_fp_filters
 acc = None
 
 i = 1
@@ -76,7 +107,7 @@ for filename in tqdm(os.listdir(KICAD_REPO)):
     sym_lib = SymbolLib.from_file(f)
 
     for sym in sym_lib.symbols:
-        acc = target_fn(acc, sym)
+        acc = target_fn(accumulator=acc, symbol=sym, lib=sym_lib)
 
     i += 1
 

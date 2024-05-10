@@ -27,7 +27,8 @@ class Part:
     source_revision: str
 
 class Package:
-    def __init__(self, desc, group_names: List[str]=[], max_pins: Optional[int]=None):
+    def __init__(self, slug, desc, group_names: List[str]=[], max_pins: Optional[int]=None):
+        self.slug = slug
         self._desc = dedent(desc).strip()
         self._group_names = group_names
         self._max_pins = max_pins
@@ -63,6 +64,7 @@ class Package:
 
 
 DIPPackage = Package(
+    slug="DIP",
     desc="""
     This package has two parallel rows of pins extending down from opposite edges of the chip.
 
@@ -74,6 +76,7 @@ DIPPackage = Package(
 )
 
 TO220Package = Package(
+    slug="TO-220",
     desc="""
     This package has 3 pins on one edge, and a metal tab with a hole in the center on the opposite edge. The metal tab serves as a heat sink and can be soldered to a larger heat sink or attached with an M3 screw.
 
@@ -125,6 +128,7 @@ THT_DIP_KEYS = [
     'digikey-footprints:DIP-4_W7.62mm',
     'digikey-footprints:DIP-40_W15.24mm',
     'digikey-footprints:DIP-10_W10.16mm',
+    'DIP*W7.62mm*',
 ]
 
 for key in THT_DIP_KEYS:
