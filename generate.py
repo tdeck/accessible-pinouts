@@ -15,7 +15,6 @@ from repos import *
 from packages import *
 
 OUTDIR = '/home/troy/projects/static/blindmakers/content/pinouts'
-#OUTDIR = '/home/troy/tmp/pinout-gen'
 
 jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader("."))
 
