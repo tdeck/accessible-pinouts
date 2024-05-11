@@ -90,7 +90,7 @@ TO220Package = Package(
 TO92Package = Package(
     slug="TO-92",
     desc="""
-    This False package has three pins protruding from one end. The body of the part has a curved side and a flat side, forming a D-shaped cross section. With the flat side facing up and the three pins pointing toward you, the pins are numbered 1, 2, 3 from left to right.
+    This small package has three pins protruding from one end. The body of the part has a curved side and a flat side, forming a D-shaped cross section. With the flat side facing up and the three pins pointing toward you, the pins are numbered 1, 2, 3 from left to right.
     """,
     max_pins=3,
 )
